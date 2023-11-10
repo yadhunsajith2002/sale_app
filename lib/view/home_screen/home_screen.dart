@@ -15,6 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final phone_numberController = TextEditingController();
   final emailController = TextEditingController();
   final countrycontroller = TextEditingController();
+  final data = HomeController().items;
   @override
   void initState() {
     Provider.of<HomeController>(context, listen: false).fetchData();
@@ -86,8 +87,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                     children: [
                                       IconButton(
                                           onPressed: () {
+                                            nameController.text =
+                                                data[index].name.toString();
+                                            addresController.text =
+                                                data[index].address.toString();
+                                            phone_numberController.text =
+                                                data[index]
+                                                    .phoneNumber
+                                                    .toString();
+                                            emailController.text =
+                                                data[index].email.toString();
+                                            countrycontroller.text =
+                                                data[index].country.toString();
                                             addBottomSheet(
-                                                ctx: context, isEdit: true);
+                                                index: index,
+                                                ctx: context,
+                                                isEdit: true);
                                           },
                                           icon: Icon(Icons.edit)),
                                       SizedBox(
@@ -117,7 +132,14 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.white,
         onPressed: () {
-          addBottomSheet(ctx: context);
+          nameController.clear();
+          addresController.clear();
+          phone_numberController.clear();
+          emailController.clear();
+          countrycontroller.clear();
+          addBottomSheet(
+            ctx: context,
+          );
         },
         child: Icon(
           Icons.add,
@@ -140,7 +162,8 @@ class _HomeScreenState extends State<HomeScreen> {
     ]));
   }
 
-  addBottomSheet({required BuildContext ctx, bool isEdit = false}) {
+  addBottomSheet(
+      {required BuildContext ctx, bool isEdit = false, int index = 0}) {
     showModalBottomSheet(
       isScrollControlled: true,
       context: ctx,
@@ -229,18 +252,35 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () async {
                           final phonNumber =
                               int.tryParse(phone_numberController.text);
-                          await Provider.of<HomeController>(context,
-                                  listen: false)
-                              .addData(
-                            name: nameController.text,
-                            address: addresController.text,
-                            phone: phonNumber,
-                            email: emailController.text,
-                            country: countrycontroller.text,
-                          );
-                          print("Name: ${nameController.text}");
-                          setState(() {});
-                          Navigator.pop(context);
+
+                          if (isEdit == false) {
+                            await Provider.of<HomeController>(context,
+                                    listen: false)
+                                .addData(
+                              name: nameController.text,
+                              address: addresController.text,
+                              phone: phonNumber,
+                              email: emailController.text,
+                              country: countrycontroller.text,
+                            );
+
+                            setState(() {});
+                            Navigator.pop(context);
+                          } else {
+                            await Provider.of<HomeController>(context,
+                                    listen: false)
+                                .updateEmployee(
+                              id: data[index].id,
+                              name: nameController.text,
+                              address: addresController.text,
+                              phone: phonNumber,
+                              email: emailController.text,
+                              country: countrycontroller.text,
+                            );
+
+                            setState(() {});
+                            Navigator.pop(context);
+                          }
                         },
                         child: Text(isEdit ? "Update" : "Save"),
                       ),

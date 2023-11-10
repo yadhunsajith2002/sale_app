@@ -33,11 +33,6 @@ class HomeController extends ChangeNotifier {
     required String email,
     required String country,
   }) async {
-    if (name.isEmpty) {
-      print("Name cannot be empty.");
-      return;
-    }
-
     final addUrl = Uri.parse("http://10.0.2.2:9000/data/add");
 
     try {
@@ -65,6 +60,41 @@ class HomeController extends ChangeNotifier {
 
     fetchData();
     isLoading = false;
+    notifyListeners();
+  }
+
+  updateEmployee(
+      {required String name,
+      required String address,
+      required int? phone,
+      required String email,
+      required String country,
+      int? id}) async {
+    final oprtnUrl = Uri.parse("http://10.0.2.2:9000/data");
+
+    var requestBody = {
+      "id": id,
+      "name": name,
+      "address": address,
+      "phone_number": phone?.toString() ?? "",
+      "email": email,
+      "country": country,
+    };
+
+    var response = await http.put(oprtnUrl, body: requestBody);
+
+    if (response.statusCode == 200) {
+      var decodeddata = await jsonDecode(response.body);
+
+      items = List<EmployeeModel>.from(
+          decodeddata.map((data) => EmployeeModel.fromJson(data)));
+      fetchData();
+      notifyListeners();
+    } else {
+      print("Data Unavailable");
+    }
+    isLoading = false;
+
     notifyListeners();
   }
 
